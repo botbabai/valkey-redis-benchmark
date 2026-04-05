@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis-7.2
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly no
+    volumes:
+      - redis_data:/data
+    networks:
+      - benchmark
+
+  valkey:
+    image: valkey/valkey:7.2-alpine
+    container_name: valkey-7.2
+    ports:
+      - "6380:6379"
+    command: valkey-server --appendonly no
+    volumes:
+      - valkey_data:/data
+    networks:
+      - benchmark
+
+  benchmark:
+    image: redis:7.2-alpine
+    container_name: benchmark-client
+    depends_on:
+      - redis
+      - valkey
+    volumes:
+      - ./scripts:/scripts
+    networks:
+      - benchmark
+    command: sleep infinity
+
+volumes:
+  redis_data:
+  valkey_data:
+
+networks:
+  benchmark:
+    driver: bridge
